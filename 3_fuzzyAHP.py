@@ -1,7 +1,34 @@
 import numpy as np 
-from AHP import fill, normalize, getWeightVector
+
 np.set_printoptions(formatter={'float':lambda x:"{0:0.2f}".format(x)})
 
+
+def fill(matrix):
+    m_len = len(matrix) 
+    for i in range(0, m_len):
+        matrix[i,i] = 1
+    for i in range(0, m_len):
+        if matrix[0,i] == 0:
+            print("missing number in row 0") 
+            return [] 
+    for i in range(0, m_len):
+        for j in range(0, m_len):
+            if matrix[i,j] != 0:
+                continue
+            else:
+                if matrix[j,i] != 0:
+                    matrix[i,j] = 1/matrix[j,i]
+                else:
+                    matrix[i,j] = matrix[0,j]/matrix[0,i]
+    return matrix
+
+def normalize(comparisonMatrix):
+    matrix = comparisonMatrix.copy()
+    return matrix/np.sum(matrix, axis=0)
+
+def getWeightVector(matrix):
+    w = np.sum(matrix, axis=1)
+    return normalize(w)
 
 def show(matrix, name="---------"):
     print("---"+name+"----")
@@ -39,7 +66,7 @@ def defuzzyfication(fuzzyMatrix, alpha = 0.5, beta = 0.5):
     alpha_l = fuzzyMatrix[:,:,0] + alpha*(fuzzyMatrix[:,:,1] - fuzzyMatrix[:,:,0])
     alpha_r = fuzzyMatrix[:,:,2] - alpha*(fuzzyMatrix[:,:,2] - fuzzyMatrix[:,:,1])
     alpha_matrix = np.dstack((alpha_l, alpha_r))
-    #show(alpha_matrix, "alpha")
+    show(alpha_matrix, "alpha")
 
     beta_matrix = np.add(np.multiply(alpha_matrix[:,:,0],beta),np.multiply(alpha_matrix[:,:,1],(1-beta)))
     #show(beta_matrix, "beta")
@@ -54,14 +81,31 @@ def reorder(matrix):
     return np.dstack((L, M, U))
 
 #==================================================================
-D1 = np.array([[0.0, 4.0, 3.0, 2.0], [0.0, 0.0, 0.8, 0.7], [0.0, 0.0, 0.0, 0.60], [0, 0, 0, 0]], dtype=float)
-D2 = np.array([[0.0, 4.2, 3.0, 1.5], [0.0, 0.0, 0.85,0.7], [0.0, 0.0, 0.0, 0.65], [0, 0, 0, 0]], dtype=float)
-D3 = np.array([[0.0, 3.9, 2.8, 2.3], [0.0, 0.0, 0.7, 0.7], [0.0, 0.0, 0.0, 0.65], [0, 0, 0, 0]], dtype=float)
+D1 = np.array([[0.0, 4.0, 3.0, 2.0], 
+                [0.0, 0.0, 0.8, 0.7], 
+                [0.0, 0.0, 0.0, 0.60], 
+                [0, 0, 0, 0]], dtype=float)
+
+D2 = np.array([[0.0, 4.2, 3.0, 1.5], 
+                [0.0, 0.0, 0.85,0.7], 
+                [0.0, 0.0, 0.0, 0.65], 
+                [0, 0, 0, 0]], dtype=float)
+
+D3 = np.array([[0.0, 3.9, 2.8, 2.3], 
+                [0.0, 0.0, 0.7, 0.7], 
+                [0.0, 0.0, 0.0, 0.65], 
+                [0, 0, 0, 0]], dtype=float)
 listComparisonMatrix = np.array([D1, D2, D3])
 
-alternative1 = np.array([[2, 1, 3, 4], [4, 3, 1, 2], [3, 2, 2, 2]])
-alternative2 = np.array([[3, 3, 1, 3], [4, 1, 2, 3], [4, 4, 1, 1]])
-alternative3 = np.array([[2, 2, 1, 5], [2, 3, 2, 3], [3, 3, 3, 1]])
+alternative1 = np.array([[2, 1, 3, 4], 
+                        [4, 3, 1, 2], 
+                        [3, 2, 2, 2]])
+alternative2 = np.array([[3, 3, 1, 3], 
+                        [4, 1, 2, 3], 
+                        [4, 4, 1, 1]])
+alternative3 = np.array([[2, 2, 1, 5], 
+                        [2, 3, 2, 3], 
+                        [3, 3, 3, 1]])
 listPreference = np.array([fuzzyfication(alternative1), fuzzyfication(alternative2), fuzzyfication(alternative3)])
 
 listComparisonMatrix = fillAllComparisonMatrix(listComparisonMatrix)
@@ -72,6 +116,8 @@ fuzzied_normalized = normalize(fuzzied)
 show(fuzzied_normalized, "normalizedFuzzyComaprisonMatrix")
 
 w = getWeightVector(fuzzied_normalized)
+w = np.reshape(w, (-1, 1, 3))
+w = reorder(w)
 show(w, "criteriaWeightVector")
 
 show(listPreference, "fuzzyAlternativeMatrix")
@@ -118,4 +164,5 @@ S = np.transpose(S, axes=(1,0))
 show(S, "S_matrix")
 
 R = S[:,1]/(S[:,1]+S[:,0])
+R = normalize(R)
 show(R, "R_matrix")
