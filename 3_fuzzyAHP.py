@@ -1,8 +1,7 @@
 import numpy as np 
-
 np.set_printoptions(formatter={'float':lambda x:"{0:0.2f}".format(x)})
 
-
+#Điền đầy đủ vào các ma trận so sánh cặp
 def fill(matrix):
     length = len(matrix) 
     #Set polygon = 1
@@ -18,48 +17,57 @@ def fill(matrix):
                 else: matrix[i,j] = matrix[0,j]/matrix[0,i]
     return matrix
 
-def normalize(comparisonMatrix):
-    matrix = comparisonMatrix.copy()
-    return matrix/np.sum(matrix, axis=0)
-
+#Tính vector trọng số của ma trận so sánh
 def getWeightVector(matrix):
-    w = np.sum(matrix, axis=1)
-    return w/matrix.shape[1]
+    #Copy ma trận để không ảnh hưởng ma trận ban đầu
+    matrix = matrix.copy()
+    #Chuẩn hóa ma trận bằng cách chia từng ô cho tổng cột tương ứng
+    matrix = matrix/np.sum(matrix, axis=0)
+    #Tính trọng số bằng cách tính trung bình cộng mỗi hàng
+    w = np.sum(matrix, axis=1)/matrix.shape[1]
+    return w
 
+#Tổng hợp các ma trận lại thành một ma trận mờ kích thước m hàng n cột 3 giá trị mờ
 def aggregate(listComparisonMatrix, dim = 3):
-    if dim == 3:
-        L = np.min(listComparisonMatrix, axis = 0)
-        M = np.average(listComparisonMatrix, axis = 0)
-        U = np.max(listComparisonMatrix, axis = 0)
+    if dim == 3: 
+        L = np.min(listComparisonMatrix, axis = 0) #Tính min của mảng
+        M = np.average(listComparisonMatrix, axis = 0) #Tính trung bình của mảng
+        U = np.max(listComparisonMatrix, axis = 0) #Tính max của mảng
         return np.dstack((L, M, U))
     if dim == 4:
-        L = np.min(listComparisonMatrix[:,:,:,0], axis = 0)
-        M = np.average(listComparisonMatrix[:,:,:,1], axis = 0)
-        U = np.max(listComparisonMatrix[:,:,:,2], axis = 0)
+        L = np.min(listComparisonMatrix[:,:,:,0], axis = 0)     #Tính min của min của các phần tử mảng
+        M = np.average(listComparisonMatrix[:,:,:,1], axis = 0) #Tính ave của ave của các phần tử mảng
+        U = np.max(listComparisonMatrix[:,:,:,2], axis = 0)     #Tính max của max của các phần tử mảng
         return np.dstack((L, M, U))
 
+#Làm mờ hóa ma trận Vd: 1->(1,1,3); 3->(1,3,5) 
 def fuzzyfication(M):
     L = np.maximum(M-2, np.full((M.shape), 1))
     U = np.minimum(M+2, np.full((M.shape), 9))
     return np.dstack((L, M, U))
 
+#Khử mờ
 def defuzzyfication(fuzzyMatrix, alpha = 0.5, beta = 0.5):
+    #Xác định khoảng rõ (khử alpha)
     alpha_l = fuzzyMatrix[:,:,0] + alpha*(fuzzyMatrix[:,:,1] - fuzzyMatrix[:,:,0])
     alpha_r = fuzzyMatrix[:,:,2] - alpha*(fuzzyMatrix[:,:,2] - fuzzyMatrix[:,:,1])
-
     alpha_matrix = np.dstack((alpha_l, alpha_r))
+
+    #Xác định giá trị rõ (khử beta)
     beta_matrix = alpha_l*beta + alpha_r*(1-beta)
     return  alpha_matrix, beta_matrix
 
+#Xắp xếp lại các giá trị mờ
 def reorder(matrix):
-    if(matrix.ndim != 3): print("ERROR"); return;
-    L = np.min([matrix[:,:,0], matrix[:,:,1], matrix[:,:,2]], axis = 0)
-    U = np.max([matrix[:,:,0], matrix[:,:,1], matrix[:,:,2]], axis = 0)
-    M = matrix[:,:,0] + matrix[:,:,1] + matrix[:,:,2] - L - U
+    if(matrix.ndim != 3): raise "ERROR"
+    listLMU = [matrix[:,:,0], matrix[:,:,1], matrix[:,:,2]]
+    L = np.min(listLMU, axis = 0)
+    U = np.max(listLMU, axis = 0)
+    M = np.sum(listLMU, axis = 0) - L - U
     return np.dstack((L, M, U))
 
-def show(matrix, name="---------"):
-    print("---"+name+"----")
+def show(matrix, title="---------"):
+    print("---"+title+"----")
     if matrix.ndim >4 : raise "Error, can't show matrix with high than 4 dimension"
     if matrix.ndim == 4 : [show(matrix[i]) for i in range(0,3)]; return;
     if matrix.ndim == 3 :
@@ -69,7 +77,7 @@ def show(matrix, name="---------"):
             print("")
     else: print(matrix)
 #==================================================================
-#Định nghĩa các ma trận đánh giá phương án (hàng) theo các tiêu chí (cột)
+#Sample các ma trận đánh giá phương án (hàng) theo các tiêu chí (cột)
 list_criteria_comparison = np.array([
         #Chuyên gia 1
         [[0.0, 4.0, 3.0, 2.00], 
@@ -87,7 +95,7 @@ list_criteria_comparison = np.array([
          [0.0, 0.0, 0.0, 0.65], 
          [0.0, 0.0, 0.0, 0.00]]
 ], dtype=float)
-#Định nghĩa các ma trận đánh giá phương án (hàng) theo các tiêu chí (cột)
+#Sample các ma trận đánh giá phương án (hàng) theo các tiêu chí (cột)
 list_alternative_criteria = np.array([
         #Chuyên gia 1
         [[3, 1, 5, 7], 
@@ -109,11 +117,9 @@ list_criteria_comparison = [fill(e) for e in list_criteria_comparison]
 D_matrix = aggregate(list_criteria_comparison, dim = 3)
 show(D_matrix, "fuzzyComaprisonMatrix")
 #Chuẩn hóa và tìm trọng số từ các ma trận so sánh cặp tiêu chí
-normalied_D_matrix = normalize(D_matrix)
-show(normalied_D_matrix, "normalizedFuzzyComaprisonMatrix")
-w = getWeightVector(normalied_D_matrix).reshape((-1,1,3))
-w = reorder(w)
-show(w, "criteriaWeightVector")
+w = getWeightVector(D_matrix).reshape((-1,1,3))
+w_reorder = reorder(w)
+show(w_reorder, "criteriaWeightVector")
 
 #Làm mờ hóa các ma trận đánh giá phương án - tiêu chí
 list_fuzzied_alternative_criteria = np.array([fuzzyfication(e) for e in list_alternative_criteria])
@@ -128,11 +134,11 @@ a_matrix_reorder = reorder(a_matrix)
 show(a_matrix_reorder, "a_matrix_reorder")
 
 #Tổng hợp
-h_matrix = a_matrix_reorder.copy()
-for i in range(0, len(h_matrix[0])):
-    h_matrix[:,i] *= w[i]
-#h_matrix = a_matrix*w.reshape((-1, 3))
+h_matrix = a_matrix_reorder*w_reorder.reshape((-1, 3))
 show(h_matrix, "h_matrix")
+# h_matrix2 = a_matrix*w.reshape((-1, 3))
+# show(reorder(h_matrix2), "h_matrix2")
+
 #Khử mờ
 _, h_defuzzy = defuzzyfication(h_matrix, alpha=0.6, beta=0.5)
 show(h_defuzzy, "defuzzy")
@@ -145,16 +151,5 @@ S = np.hstack((S_max, S_min))
 show(S, "S_matrix")
 #Tính kết quả cuối cùng
 R = S[:,1]/(S[:,1]+S[:,0])
-R = normalize(R)
+R = R/np.sum(R)
 show(R, "R_matrix")
-
-
-a = np.array([[[1, 2, 3], [4, 5, 6]],
-     [[7, 8, 9], [10,11,12]]])
-w =  np.array([[[1, 10, 100]], [[2, 20, 200]]])
-
-h = a.copy()
-for i in range(0, len(h[0])):
-    h[:,i] *= w[i]
-show(h)
-show(a*w.reshape((-1, 3)))
