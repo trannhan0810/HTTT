@@ -1,6 +1,7 @@
 import numpy as np
 np.set_printoptions(formatter={'float':lambda x:"{0:0.1f}".format(x)})
 
+
 criteria_name = ['C1', 'C2']
 criterias = { 'C1': 6, 'C2': 4, 'C1_C2': 5 }
 
@@ -15,3 +16,8 @@ def calculateBel(dictionary):
 def calculatePl(dictionary):
     return {key: np.sum([dictionary[k] for k in dictionary.keys() if any(x in key.split('_') for x in k.split('_'))]) for key in dictionary.keys()}
 
+criteria_Bel = calculateBel(criterias)
+criteria_Pl = calculatePl(criterias)
+
+alternatives_Bel = { key: calculateBel(alternatives[key]) for key in criteria_name }
+alternatives_Pl = { key: calculatePl(alternatives[key]) for key in criteria_name }

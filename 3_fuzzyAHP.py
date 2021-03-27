@@ -9,8 +9,7 @@ def fill(matrix):
         matrix[i,i] = 1
     for i in range(0, m_len):
         if matrix[0,i] == 0:
-            print("missing number in row 0") 
-            return [] 
+            raise "missing number in row 0"
     for i in range(0, m_len):
         for j in range(0, m_len):
             if matrix[i,j] != 0:
