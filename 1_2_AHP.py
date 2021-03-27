@@ -2,21 +2,17 @@ import numpy as np
 np.set_printoptions(formatter={'float':lambda x:"{0:0.3f}".format(x)})
 
 def fill(matrix):
-    m_len = len(matrix) 
-    #Fill 1 for the diagon
-    for i in range(0, m_len): matrix[i,i] = 1
-    #Throw error if first row have 0
-    for i in range(0, m_len):
-        if matrix[0,i] == 0: raise "missing number in row 0" 
-    #Start filling
-    for i in range(0, m_len):
-        for j in range(0, m_len):
-            #Ignore if that cell not equal 0
-            if matrix[i,j] != 0: continue
-            else:
+    length = len(matrix) 
+    #Set polygon = 1
+    for i in range(0, length): matrix[i,i] = 1
+    #If row 0 contain 0 raise a error
+    if any(cell == 0 for cell in matrix[0] ): raise "missing number in row 0"
+    for i in range(0, length):
+        for j in range(0, length):
+            if matrix[i,j] == 0:
                 #If cell[j,i] have value, use inverse number of cell[j,i]
                 if matrix[j,i] != 0: matrix[i,j] = 1/matrix[j,i]
-                #Else use the chain rule: cell[0,j]=cell[0,i]*cell[i,j]
+                 #Else use the chain rule: cell[0,j]=cell[0,i]*cell[i,j]
                 else: matrix[i,j] = matrix[0,j]/matrix[0,i]
     return matrix
 

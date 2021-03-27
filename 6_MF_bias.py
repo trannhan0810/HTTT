@@ -79,7 +79,4 @@ print("Missing: ", len(A)*len(A[0]) - len(np.flatnonzero(A)))
 #Kết quả cuối cùng
 print(Ans)
 #Hàm loss
-print("Lost1: ", np.sum((Ans - A_full)**2))
-
-lost2 =0 
-for 
+print("Lost: ", np.sum((Ans - A_full)**2))
