@@ -1,30 +1,31 @@
 import numpy as np
 np.set_printoptions(formatter={'float':lambda x:"{0:0.1f}".format(x)})
 
-
-# sinh ra ma tran goc
 x_length = 5
 y_length = 5
 
-x_weight = np.random.rand(x_length)
-y_weight = np.random.rand(y_length)
-bias_row_init = np.random.rand(x_length)
-bias_col_init = np.random.rand(y_length)
-bias_all = np.random.rand()
+def linear_matrix_generator(x_length, y_length):
+    # Hàm để sinh ra ma trận ban đầu, không cần quan tâm
+    x_weight = np.random.rand(x_length)
+    y_weight = np.random.rand(y_length)
+    bias_row_init = np.random.rand(x_length)
+    bias_col_init = np.random.rand(y_length)
+    bias_all = np.random.rand()
 
-A_full = np.zeros((x_length,y_length))
-for i in range(x_length):
-    for j in range(y_length):
-        A_full[i][j] = x_weight[i]*3+2*y_weight[j] + bias_row_init[i] + bias_col_init[j] + bias_all
+    A_full = np.zeros((x_length,y_length))
+    for i in range(x_length):
+        for j in range(y_length):
+            A_full[i][j] = x_weight[i]*3+2*y_weight[j] + bias_row_init[i] + bias_col_init[j] + bias_all
 
-print("==============================================")
-A = np.zeros((x_length,y_length))
-for i in range(x_length):
-    for j in range(y_length):
-        A[i][j] = (0 if np.random.rand() < 0.3 else 1)*A_full[i][j]
+    A = np.zeros((x_length,y_length))
+    for i in range(x_length):
+        for j in range(y_length):
+            A[i][j] = (0 if np.random.rand() < 0.3 else 1)*A_full[i][j]
+    return A_full, A
 
 print("=================================================")
 #Bây h mới vào MF bias 
+A_full, A = linear_matrix_generator(x_length, y_length)
 
 #Tính các giá trị ban đầu cho các bias
 u = np.sum(A)/len(np.flatnonzero(A))
@@ -34,12 +35,11 @@ bias_col = [ np.sum(A[:,j]-u)/len(np.flatnonzero(A[:,j])) for j in range(y_lengt
 #Khởi tạo 2 ma trận W và H
 w=np.ones((x_length,3))                              
 h=np.ones((3,y_length))                             
-
+#các hằng số
 beta = 0.01
 lamb = 0.005
-
 #Bắt đầu train
-for epoch in range(40000//len(np.flatnonzero(A))):      #Update 40000 lần      
+for epoch in range(30000//len(np.flatnonzero(A))):      #Update 40000 lần      
     #Duyệt qua các phần tử có A[i][j] > 0            
     for i in range(x_length):                         
         for j in range(y_length):                     
@@ -55,15 +55,6 @@ for epoch in range(40000//len(np.flatnonzero(A))):      #Update 40000 lần
                 temp_h = h[:,j] + beta*(2*E*w[i,:]  -lamb*h[:,j])
                 w[i,:] = temp_w
                 h[:,j] = temp_h
-
-#Ans = w.dot(h) + u 
-# print("+++++++++++++++++++++++++++++++++")
-# print("u");print(u)
-# print("w");print(w)
-# print("h");print(h)
-# print("bi");print(bias_row)
-# print("bj");print(bias_col)
-
 #Tính toán kết quả cuối cùng
 Ans = np.zeros((x_length, y_length))
 for i in range(x_length):             
