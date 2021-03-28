@@ -28,7 +28,7 @@ def getWeightVector(matrix):
     return w
 
 #Tổng hợp các ma trận lại thành một ma trận mờ kích thước m hàng n cột 3 giá trị mờ
-def aggregate(listComparisonMatrix, dim = 3):
+def integrate(listComparisonMatrix, dim = 3):
     if dim == 3: 
         L = np.min(listComparisonMatrix, axis = 0) #Tính min của mảng
         M = np.average(listComparisonMatrix, axis = 0) #Tính trung bình của mảng
@@ -114,8 +114,8 @@ list_alternative_criteria = np.array([
 #Điền kín các ma trận so sánh cặp tiêu chí
 list_criteria_comparison = [fill(e) for e in list_criteria_comparison]
 #Tích hợp các ma trận so sánh cặp tiêu chí
-D_matrix = aggregate(list_criteria_comparison, dim = 3)
-show(D_matrix, "fuzzyComaprisonMatrix")
+D_matrix = integrate(list_criteria_comparison, dim = 3)
+show(D_matrix, "listOfFuzzyComaprisonMatrix")
 #Chuẩn hóa và tìm trọng số từ các ma trận so sánh cặp tiêu chí
 w = getWeightVector(D_matrix).reshape((-1,1,3))
 w_reorder = reorder(w)
@@ -125,9 +125,9 @@ show(w_reorder, "criteriaWeightVector")
 list_fuzzied_alternative_criteria = np.array([fuzzyfication(e) for e in list_alternative_criteria])
 show(list_fuzzied_alternative_criteria, "fuzzyAlternativeCriteriaMatrix")
 #Tích hợp các ma trận đánh giá phương án - tiêu chí
-G_matrix = aggregate(list_fuzzied_alternative_criteria, dim = 4)
+G_matrix = integrate(list_fuzzied_alternative_criteria, dim = 4)
 show(G_matrix, "G_matrix")
-#Chuẩn hóa ma trận đánh giá phương án - tiêu chí
+#Chuẩn hóa ma trận đánh giá phương án - tiêu chí bằng cách chia từng phần tử cho căn bậc 2 của tổng bình phương của cột tương ứng
 a_matrix = G_matrix/np.sqrt(np.sum((G_matrix**2), axis=0))
 show(a_matrix, "a_matrix")
 a_matrix_reorder = reorder(a_matrix)
@@ -137,8 +137,7 @@ show(a_matrix_reorder, "a_matrix_reorder")
 h_matrix = a_matrix_reorder*w_reorder.reshape((-1, 3))
 show(h_matrix, "h_matrix")
 # h_matrix2 = a_matrix*w.reshape((-1, 3))
-# show(reorder(h_matrix2), "h_matrix2")
-
+# show(reorder(h_matrix2), "h_matrix")
 #Khử mờ
 _, h_defuzzy = defuzzyfication(h_matrix, alpha=0.6, beta=0.5)
 show(h_defuzzy, "defuzzy")
