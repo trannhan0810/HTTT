@@ -40,9 +40,9 @@ def Pl(comb, mass):
 def leftSideInequantion(combs, names):
     return np.array([[1 if(x in comb.split('_')) else 0 for x in names] for comb in combs])
 #                                       left_side:          right_side:
-# Bel[C1]    ≤ p1                      [[-1 , 0 ]   ≤     [-Bel[0]
-# Bel[C2]    ≤ p1                       [ 0 ,-1 ]          -Bel[1]
-# Bel[C1_C2] ≤ p1+p2                    [ 1 ,-1 ]          -Bel[2]
+# -Bel[C1]   ≤ -p1                      [[-1 , 0 ]   ≤     [-Bel[0]
+# -Bel[C2]   ≤ -p1                       [ 0 ,-1 ]          -Bel[1]
+# -Bel[C1_C2]≤ -p1-p2                    [ 1 ,-1 ]          -Bel[2]
 # p1         ≤ Pl[C1]              <=>  [ 1 , 0 ]           Pl[0]
 # p2         ≤ Pl[C2]                   [ 0 , 1 ]           Pl[1]
 # p1 + p2    ≤ Pl[C1_C2]                [ 1 , 1 ]]          Pl[2]
@@ -55,8 +55,10 @@ def getCriteriaConditional(cri_comb, criterias, criteria_Pl, criteria_Bel):
 criteria_Bel = Bel(cri_comb, cri_mass)
 criteria_Pl = Pl(cri_comb, cri_mass)
 
-alternatives_Bel = [Bel(alter_mass[key], alter_comb) for key in range(num_of_cri) ]
-alternatives_Pl = [Pl(alter_mass[key], alter_comb) for key in range(num_of_cri) ]
+alternatives_Bel = [Bel(alter_comb, alter_mass[key]) for key in range(num_of_cri) ]
+alternatives_Pl = [Pl(alter_comb, alter_mass[key]) for key in range(num_of_cri) ]
+
+
 
 left_side, right_side = getCriteriaConditional(cri_comb, criterias, criteria_Pl, criteria_Bel)
 

@@ -6,7 +6,7 @@ def fill(matrix):
     length = len(matrix) 
     #Set polygon = 1
     for i in range(0, length): matrix[i,i] = 1
-    #If row 0 contain 0 raise a error
+    #If row 0 contain 0 raise an error
     if any(cell == 0 for cell in matrix[0] ): raise "missing number in row 0"
     for i in range(0, length):
         for j in range(0, length):
@@ -77,7 +77,7 @@ def show(matrix, title="---------"):
             print("")
     else: print(matrix)
 #==================================================================
-#Sample các ma trận đánh giá phương án (hàng) theo các tiêu chí (cột)
+#Sample các ma trận so sánh các tiêu chí với nhau
 list_criteria_comparison = np.array([
         #Chuyên gia 1
         [[0.0, 4.0, 3.0, 2.00], 
