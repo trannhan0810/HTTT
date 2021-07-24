@@ -23,9 +23,9 @@ def normalize(comparisonMatrix):
 
 def getWeightVector(matrix):
     #get size n of matrix
-    n = len(matrix)
+    n = len(matrix[0])
     #Calculste sum each row then divide it by n
-    w = np.sum(matrix, axis=1)/n
+    w = np.sum(matrix, axis=1)/n #=> output is a array with n element
     #Reshape it to a matrix n row x 1 col
     return np.reshape(w, (-1, 1))
 
@@ -48,15 +48,17 @@ def calculate(matrix):
     return w, CR
 
 def AHP(criteria_matrix, list_of_alternatives_matrix):
+    #Get weight vector from criteria_comparision_matrix
     criteria_w, criteria_inconsistency = calculate(criteria_matrix)
 
     list_alter_w, list_alter_inconsistency = [],[]
+    #for each alternative_comparison_matrix, get weight vector and combine them into a matrix
     for alternatives_matrix in list_of_alternatives_matrix:
         alter_w, alter_inconsistency = calculate(alternatives_matrix)
         list_alter_w.append(alter_w)
         list_alter_inconsistency.append(alter_inconsistency)
 
-    criteria_alter = np.hstack(list_alter_w)
+    criteria_alter = np.hstack(list_alter_w)        #combine weight vector of alternative into a matrix
     result = np.dot(criteria_alter, criteria_w)     #result shape is (n,1)
     result = np.reshape(result, (-1))               #change shape to (n)
 
