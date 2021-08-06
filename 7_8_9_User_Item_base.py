@@ -1,42 +1,78 @@
 import numpy as np
 import math
+from numpy import sum, sqrt, average, array as arr, abs
 
 np.set_printoptions(formatter={'float':lambda x:"{0:0.2f}".format(x)})
 
 X = -1
-rating =  np.array([[ 1, 4, 5, X, 3 ],
-                    [ 5, 1, X, 5, 2 ],
-                    [ 4, 1, 2, 5, X ],
-                    [ X, 3, X, 4, 4 ]])
+rating = np.array([
+    [ 1, 4, 5, X, 3 ],
+    [ 5, 1, X, 5, 2 ],
+    [ 4, 1, 2, 5, X ],
+    [ X, 3, X, 4, 4 ]], dtype=float)
 
-def sim(r1, r2, type="cosin"):
-    Dtrain = np.arange(len(r1))[ np.logical_and( r1>=0, r2 >=0 )]
-    r1_filter = r1[Dtrain]
-    r2_filter = r2[Dtrain]
-    if type == "cosin":
-        return np.dot(r1_filter, r2_filter)/(
-            np.sqrt(np.sum(r1_filter**2)*np.sum(r2_filter**2)))
-    if type == "pearson":
-        r1_filter-= np.average(r1[ r1 >= 0 ])
-        r2_filter-= np.average(r2[ r2 >= 0 ])
-        return np.dot(r1_filter, r2_filter)/(
-            np.sqrt(np.sum(r1_filter**2)*np.sum(r2_filter**2)))
+'''Input: 
+u1:[ 1, 2, 3, 4, 5] => u1_filtered = [ 2, 3, 4]
+u2:[-6, 7, 8, 9, -1] => u2_filtered = [ 7, 8, 9]
+Dtrain = [False, True, True, True, False]'''
+def findIntersectSet(u1, u2):
+    #u1: [ 1, 2, 3, 4, 5] => u1>=0 : [ True, True, True, True, True]
+    #u1: [-6, 7, 8, 9, -1] => u2>=0 : [ False, True, True, True, False]
+    Dtrain = np.logical_and(u1>=0, u2 >=0 )
+    u1_filtered = u1[Dtrain]
+    u2_filtered = u2[Dtrain]
+    return u1_filtered, u2_filtered
+
+def simCosin(u1, u2): 
+    u1, u2 = findIntersectSet(u1, u2)
+    return np.dot(u1, u2)/(
+        sqrt(sum(u1**2) * sum(u2**2)))
+
+def simPearson(u1, u2): 
+    u1_mean = average(u1[u1>=0])
+    u2_mean = average(u2[u2>=0])
+    u1, u2 = findIntersectSet(u1, u2)
+    print((u1,u2))
+    return np.dot(u1-u1_mean, u2-u2_mean)/(
+        sqrt(sum((u1-u1_mean)**2)*sum((u2-u2_mean)**2)))
+
+def sim(u1, u2, type="cosin"):
+    if type == "cosin": 
+        return simCosin(u1, u2)
+    else: 
+        return simPearson(u1, u2)
 
 def get_K_Nearest_Neighbor(user_index, item_index, k, rating, simArray):
-    neighbor = np.arange(len(rating))
-    neighbor = neighbor[ rating[:,item_index] [neighbor] >= 0]
+    #rating.shape = (4, 5) => 4 user, 5 item
+    NUM_OF_USER = len(rating)
+    neighbor = np.arange(NUM_OF_USER) #=> neighbor = [0,1,2,3]
+    #Loai nhung thang ko danh gia item item_index
+    neighbor = neighbor[ (lambda x: rating[x, item_index] >= 0)(neighbor)]
+    #Loai ra thang user co index = user_index
     neighbor = neighbor[ neighbor != user_index ]
     neighbor = sorted(neighbor, key = lambda x: simArray[x], reverse=True)[:k]
-    return neighbor
+    return neighbor 
+
+
 
 def pred(user_index, item_index, neighbor, rating, simArray, type="cosin"):
+    #Vd simArray = [ 0.9, 1, 0.8, 0.5], neighbor = [0, 2] => simArray[neighbor] = [0.9,0.8]
     simArray = simArray[ neighbor ]
+    #vd rating=[[ 1, 4, 5, X, 3 ],    neighbor = [0, 2] => rating[neighbor] =[[ 1, 4, 5, X, 3 ]
+    #           [ ?, 1, X, 5, 2 ],                                            [ 4, 1, 2, 5, X ]]
+    #           [ 4, 1, 2, 5, X ],
+    #           [ X, 3, X, 4, 4 ]]
     rating = rating[ neighbor ]
+
     if type == "cosin":
-        return np.sum(simArray*rating[:,item_index])/np.sum(np.abs(simArray))
+        #Vd item_index = 0 
+        #vd user_index = 1
+        #=> rating[1,0] = [0.9*1 + 0.8*4]/(0.9+0.8) = ...
+        #=> rating[1,3] = []
+        return np.sum(simArray*rating[:,item_index])/sum(abs(simArray))
     if type == "pearson":
-        r_mean = [ np.average(r[ r>=0 ]) for r in len(rating) ]
-        return r_mean[user_index] + np.sum(simArray*(rating[:,item_index] - r_mean))/np.sum(np.abs(simArray))
+        u_mean = [ average(u[u>=0]) for u in rating]
+        return u_mean[user_index] + np.sum(simArray*(rating[:,item_index] - u_mean))/np.sum(np.abs(simArray))
 
 def USER_BASE(rating, type = "cosin"):
     num_of_user, num_of_item = rating.shape
@@ -77,16 +113,18 @@ def USER_ITEM_BASE(rating, type = "cosin"):
 print(rating)
 
 print("===============USER BASE=================")
-userbase = USER_BASE(rating)
+userbase = USER_BASE(rating, "pearson")
 print("Result user base")
 print(userbase)
 
-print("================ITEM BASE==================")
-itembase = ITEM_BASE(rating)
-print("Result item base")
-print(itembase)
+# print("================ITEM BASE==================")
+# itembase = ITEM_BASE(rating)
+# print("Result item base")
+# print(itembase)
 
-print("=============USER ITEM BASE===============")
-print("Result user-item base")
-x = 0.5
-print(userbase*x + itembase*(1-x))
+# print("=============USER ITEM BASE===============")
+# print("Result user-item base")
+# x = 0.5
+# print(userbase*x + itembase*(1-x))
+
+
