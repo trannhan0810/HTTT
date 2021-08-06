@@ -96,7 +96,7 @@ def USER_BASE(rating, type = "cosin"):
     for i in range(NUM_OF_USER):
       for j in range(NUM_OF_ITEM):
         if result[i][j] == X:
-          neighbor = get_K_Nearest_Neighbor(i, j, k = 2, rating = rating, simArray = simMatrix[i])
+          neighbor = get_K_Nearest_Neighbor(i, j, k_number = 2, rating = rating, simArray = simMatrix[i])
           result[i][j] = pred(i, j, neighbor, rating, simMatrix[i], type)
     return result
 
@@ -112,7 +112,7 @@ def ITEM_BASE(rating, type = "cosin"):
     for i in range(num_of_item):
         for j in range(num_of_user):
             if result[i][j] == X:
-                neighbor = get_K_Nearest_Neighbor(i, j, k = 2, rating = rating, simArray = simMatrix[i])
+                neighbor = get_K_Nearest_Neighbor(i, j, k_number = 2, rating = rating, simArray = simMatrix[i])
                 result[i][j] = pred(i, j, neighbor, rating, simMatrix[i], type)
     return np.transpose(result)
 
@@ -120,22 +120,20 @@ def USER_ITEM_BASE(rating, type = "cosin"):
     alpha = 0.5
     return USER_BASE(rating, type)*alpha + ITEM_BASE(rating, type)*(1-alpha)
 
-# print(rating)
+print(rating)
 
-# print("===============USER BASE=================")
-# userbase = USER_BASE(rating, "pearson")
-# print("Result user base")
-# print(userbase)
+print("===============USER BASE=================")
+userbase = USER_BASE(rating, "pearson")
+print("Result user base")
+print(userbase)
 
-# print("================ITEM BASE==================")
-# itembase = ITEM_BASE(rating)
-# print("Result item base")
-# print(itembase)
+print("================ITEM BASE==================")
+itembase = ITEM_BASE(rating)
+print("Result item base")
+print(itembase)
 
-# print("=============USER ITEM BASE===============")
-# print("Result user-item base")
-# x = 0.5
-# print(userbase*x + itembase*(1-x))
+print("=============USER ITEM BASE===============")
+print("Result user-item base")
+x = 0.5
+print(userbase*x + itembase*(1-x))
 
-
-print(sum([]))
