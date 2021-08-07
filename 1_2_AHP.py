@@ -1,4 +1,5 @@
 import numpy as np 
+from numpy import array as arr
 np.set_printoptions(formatter={'float':lambda x:"{0:0.3f}".format(x)})
 
 def fill(matrix):
@@ -16,18 +17,24 @@ def fill(matrix):
                 else: matrix[i,j] = matrix[0,j]/matrix[0,i]
     return matrix
 
-def normalize(comparisonMatrix):
+def normalize(comparisonMatrix): # Input is matrix (N x N)
     #Divide each column by it's sum
     matrix = comparisonMatrix.copy()
-    return matrix/np.sum(matrix, axis=0)
+    N = matrix.shape[0] 
+    for i in range(N):
+        sum_column = np.sum(matrix[:,i])
+        print(sum_column)
+        matrix[:,i] = matrix[:,i] / sum_column
+    return matrix # return matrix (N x N)
 
-def getWeightVector(matrix):
-    #get size n of matrix
-    n = len(matrix[0])
-    #Calculste sum each row then divide it by n
-    w = np.sum(matrix, axis=1)/n #=> output is a array with n element
-    #Reshape it to a matrix n row x 1 col
-    return np.reshape(w, (-1, 1))
+def getWeightVector(matrix): # Input is matrix (N x N)
+    N = matrix.shape[0] 
+    w_vector = np.zeros(N)
+    for i in range(N):
+        sum_row = np.sum(matrix[i]);
+        w_vector[i]= sum_row/N;
+    w_vector = np.reshape(w_vector, newshape = (N, 1))
+    return w_vector # => return matrix (N x 1)
 
 def getConsistancyMeasure(matrix, w):
     return matrix.dot(w)/w
@@ -67,7 +74,11 @@ def AHP(criteria_matrix, list_of_alternatives_matrix):
 #===========================EXAMPLE====================================
 if __name__ == '__main__':
     criteria_name   = [ "salary", "lifeQuality", "interest", "nearness" ]
-    criterias = np.array([[1, 5, 2, 4], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], dtype=float)
+    criterias = np.array(
+       [[1, 5, 2, 4], 
+        [0, 0, 0, 0], 
+        [0, 0, 0, 0], 
+        [0, 0, 0, 0]], dtype=float)
 
     job_names       = ["jobA", "jobB", "jobC"]
     job_salary      = np.array([[0, 2,   4   ],  [0, 0, 2], [0, 0,  0]], dtype=float)
